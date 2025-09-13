@@ -157,33 +157,48 @@ export const WordCloud = ({ comments }: WordCloudProps) => {
           {/* Word Cloud Visualization */}
           <div className="bg-gradient-subtle rounded-lg p-8 border relative overflow-hidden min-h-[400px]">
             <div className="relative w-full h-full flex items-center justify-center">
-              {wordFrequencies.slice(0, 30).map((wordData, index) => {
-                // Create more organic positioning with spiral pattern
-                const angle = (index * 137.5) % 360; // Golden angle for natural distribution
-                const radius = Math.min(30 + (index * 6), 150); // Varying radius, capped for smaller screens
-                const x = Math.cos(angle * Math.PI / 180) * radius;
-                const y = Math.sin(angle * Math.PI / 180) * radius;
+              {wordFrequencies.slice(0, 25).map((wordData, index) => {
+                // Create varied orientations like traditional word clouds
+                const orientations = [0, 45, -45, 90, -90];
+                const rotation = orientations[index % orientations.length];
                 
-                // Add some controlled randomness for more organic feel
-                const randomX = (Math.random() - 0.5) * 30;
-                const randomY = (Math.random() - 0.5) * 30;
+                // More compact positioning - create clusters around center
+                const clusterIndex = Math.floor(index / 5);
+                const positionInCluster = index % 5;
                 
-                const rotation = (Math.random() - 0.5) * 25; // Random rotation between -12.5 and 12.5 degrees
+                // Base position with some clustering
+                let x, y;
+                if (index < 5) {
+                  // Center cluster for most important words
+                  x = (positionInCluster - 2) * 60;
+                  y = (Math.random() - 0.5) * 40;
+                } else if (index < 10) {
+                  // Second ring
+                  const angle = (positionInCluster * 72) * Math.PI / 180;
+                  x = Math.cos(angle) * 100 + (Math.random() - 0.5) * 40;
+                  y = Math.sin(angle) * 80 + (Math.random() - 0.5) * 40;
+                } else {
+                  // Outer positions
+                  const angle = (index * 25) * Math.PI / 180;
+                  x = Math.cos(angle) * (120 + Math.random() * 60) + (Math.random() - 0.5) * 50;
+                  y = Math.sin(angle) * (90 + Math.random() * 40) + (Math.random() - 0.5) * 50;
+                }
                 
                 return (
                   <span
                     key={index}
-                    className={`absolute font-medium transition-all duration-300 hover:text-primary cursor-default hover:scale-110 animate-fade-in ${getWordColor(
+                    className={`absolute font-bold transition-all duration-300 hover:text-primary hover:scale-110 cursor-default select-none animate-fade-in ${getWordColor(
                       wordData.frequency,
                       maxFreq
                     )}`}
                     style={{
-                      fontSize: `${wordData.size}px`,
-                      left: `calc(50% + ${x + randomX}px)`,
-                      top: `calc(50% + ${y + randomY}px)`,
+                      fontSize: `${Math.max(wordData.size, 14)}px`,
+                      left: `calc(50% + ${x}px)`,
+                      top: `calc(50% + ${y}px)`,
                       transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
                       animationDelay: `${index * 0.1}s`,
-                      textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+                      fontWeight: wordData.frequency > maxFreq * 0.7 ? '800' : wordData.frequency > maxFreq * 0.4 ? '600' : '500'
                     }}
                     title={`"${wordData.word}" appears ${wordData.frequency} times`}
                   >
