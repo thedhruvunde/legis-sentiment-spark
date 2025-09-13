@@ -19,7 +19,7 @@ export const WordCloud = ({ comments }: WordCloudProps) => {
     // Combine all comments and extract words
     const allText = comments.join(' ').toLowerCase();
     
-    // Common stop words to filter out
+    // Enhanced stop words including common filler words and domain-specific terms
     const stopWords = new Set([
       'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
       'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does',
@@ -29,14 +29,62 @@ export const WordCloud = ({ comments }: WordCloudProps) => {
       'so', 'very', 'just', 'now', 'then', 'here', 'there', 'when', 'where', 'why', 'how',
       'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
       'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can',
-      'don', 'should', 've', 'll', 'd', 'm', 're'
+      'don', 'should', 've', 'll', 'd', 'm', 're', 'also', 'like', 'get', 'go', 'one',
+      'two', 'first', 'last', 'new', 'old', 'good', 'bad', 'big', 'small', 'long', 'short',
+      'high', 'low', 'right', 'left', 'next', 'previous', 'said', 'say', 'come', 'came',
+      'give', 'take', 'make', 'know', 'think', 'see', 'look', 'want', 'use', 'find',
+      'tell', 'ask', 'seem', 'feel', 'try', 'leave', 'call', 'back', 'way', 'even',
+      'well', 'still', 'however', 'therefore', 'thus', 'hence', 'accordingly', 'consequently',
+      // Common consultation/legal terms that might be too generic
+      'provision', 'section', 'clause', 'draft', 'amendment', 'legislation', 'act', 'rule',
+      'regulation', 'ministry', 'department', 'government', 'india', 'indian', 'public',
+      'consultation', 'comment', 'suggestion', 'proposal', 'recommendation', 'request',
+      'regarding', 'concerning', 'respect', 'matter', 'issue', 'subject', 'mentioned',
+      'stated', 'provided', 'specified', 'considered', 'proposed', 'suggested', 'requested'
     ]);
+
+    // Function to check if word is a year, date, or number
+    const isNumericOrDate = (word: string): boolean => {
+      // Check if it's a pure number
+      if (/^\d+$/.test(word)) return true;
+      
+      // Check if it's a year (1900-2099)
+      if (/^(19|20)\d{2}$/.test(word)) return true;
+      
+      // Check if it's a date-like pattern
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(word)) return true;
+      
+      // Check if it contains mostly numbers
+      if (word.length > 2 && /\d/.test(word) && word.replace(/\d/g, '').length < 2) return true;
+      
+      return false;
+    };
+
+    // Function to check if word is meaningful
+    const isMeaningfulWord = (word: string): boolean => {
+      // Minimum length of 3 characters
+      if (word.length < 3) return false;
+      
+      // Skip if it's in stop words
+      if (stopWords.has(word)) return false;
+      
+      // Skip if it's numeric or date-related
+      if (isNumericOrDate(word)) return false;
+      
+      // Skip if it's mostly punctuation or special characters
+      if (!/^[a-zA-Z]+$/.test(word)) return false;
+      
+      // Skip very common suffixes/prefixes that got separated
+      if (['ing', 'ion', 'tion', 'ness', 'ment', 'able', 'ible', 'ful', 'less'].includes(word)) return false;
+      
+      return true;
+    };
 
     // Extract words and count frequencies
     const words = allText
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 2 && !stopWords.has(word));
+      .filter(isMeaningfulWord);
 
     const wordCount = words.reduce((acc, word) => {
       acc[word] = (acc[word] || 0) + 1;
