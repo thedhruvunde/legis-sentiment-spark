@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Minus, MessageSquare } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, MessageSquare, PieChart, BarChart3 } from "lucide-react";
+import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Pie } from 'recharts';
 
 interface SentimentAnalysisProps {
   comments: string[];
@@ -12,12 +13,15 @@ interface SentimentResult {
   comment: string;
   sentiment: 'agreement' | 'removal' | 'modification';
   confidence: number;
+  stakeholderType: string;
 }
 
 export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
   // Mock sentiment analysis - in a real app, this would call an AI API
   const sentimentResults = useMemo<SentimentResult[]>(() => {
-    return comments.map((comment) => {
+    const stakeholderTypes = ['Corporate Entity', 'Professional Body', 'Individual Practitioner', 'Industry Association', 'Government Agency', 'Academic Institution'];
+    
+    return comments.map((comment, index) => {
       // Simple keyword-based sentiment analysis for demo
       const positiveWords = ['support', 'excellent', 'good', 'positive', 'appreciate', 'well', 'strengthen', 'improve', 'comprehensive'];
       const negativeWords = ['concern', 'poor', 'harm', 'restrict', 'serious', 'drive away', 'burden', 'against'];
@@ -40,7 +44,12 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
         confidence = 0.7 + Math.random() * 0.2;
       }
       
-      return { comment, sentiment, confidence };
+      return { 
+        comment, 
+        sentiment, 
+        confidence,
+        stakeholderType: stakeholderTypes[index % stakeholderTypes.length]
+      };
     });
   }, [comments]);
 
@@ -59,6 +68,31 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
       removal: { count: counts.removal, percentage: (counts.removal / total) * 100 },
       modification: { count: counts.modification, percentage: (counts.modification / total) * 100 },
     };
+  }, [sentimentResults]);
+
+  const pieChartData = useMemo(() => [
+    { name: 'In Agreement', value: sentimentCounts.agreement.count, color: '#22c55e' },
+    { name: 'In Modification', value: sentimentCounts.modification.count, color: '#3b82f6' },
+    { name: 'In Removal', value: sentimentCounts.removal.count, color: '#ef4444' },
+  ], [sentimentCounts]);
+
+  const stakeholderData = useMemo(() => {
+    const stakeholderGroups = sentimentResults.reduce((acc, result) => {
+      if (!acc[result.stakeholderType]) {
+        acc[result.stakeholderType] = { agreement: 0, modification: 0, removal: 0, total: 0 };
+      }
+      acc[result.stakeholderType][result.sentiment]++;
+      acc[result.stakeholderType].total++;
+      return acc;
+    }, {} as Record<string, { agreement: number; modification: number; removal: number; total: number }>);
+
+    return Object.entries(stakeholderGroups).map(([type, counts]) => ({
+      stakeholderType: type.replace(' ', '\n'), // Line break for better display
+      'In Agreement': counts.agreement,
+      'In Modification': counts.modification,
+      'In Removal': counts.removal,
+      total: counts.total
+    }));
   }, [sentimentResults]);
 
   const getSentimentIcon = (sentiment: string) => {
@@ -157,6 +191,89 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pie Chart */}
+        <Card className="shadow-medium">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <PieChart className="h-5 w-5 text-primary" />
+              <span>Sentiment Distribution</span>
+            </CardTitle>
+            <CardDescription>
+              Overall distribution of stakeholder sentiments
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <Pie
+                    data={pieChartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stakeholder Type Distribution */}
+        <Card className="shadow-medium">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <span>Sentiment by Stakeholder Type</span>
+            </CardTitle>
+            <CardDescription>
+              Distribution of sentiments across different stakeholder categories
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stakeholderData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 60,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="stakeholderType" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={10}
+                  />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="In Agreement" stackId="a" fill="#22c55e" />
+                  <Bar dataKey="In Modification" stackId="a" fill="#3b82f6" />
+                  <Bar dataKey="In Removal" stackId="a" fill="#ef4444" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Individual Comments Analysis */}
       <Card className="shadow-medium">
