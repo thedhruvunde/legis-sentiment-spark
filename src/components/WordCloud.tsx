@@ -155,21 +155,42 @@ export const WordCloud = ({ comments }: WordCloudProps) => {
       <CardContent>
         <div className="space-y-6">
           {/* Word Cloud Visualization */}
-          <div className="bg-gradient-subtle rounded-lg p-8 border">
-            <div className="flex flex-wrap items-center justify-center gap-2 leading-relaxed">
-              {wordFrequencies.slice(0, 30).map((wordData, index) => (
-                <span
-                  key={index}
-                  className={`font-medium transition-colors hover:text-primary cursor-default ${getWordColor(
-                    wordData.frequency,
-                    maxFreq
-                  )}`}
-                  style={{ fontSize: `${wordData.size}px` }}
-                  title={`"${wordData.word}" appears ${wordData.frequency} times`}
-                >
-                  {wordData.word}
-                </span>
-              ))}
+          <div className="bg-gradient-subtle rounded-lg p-8 border relative overflow-hidden min-h-[400px]">
+            <div className="relative w-full h-full flex items-center justify-center">
+              {wordFrequencies.slice(0, 30).map((wordData, index) => {
+                // Create more organic positioning with spiral pattern
+                const angle = (index * 137.5) % 360; // Golden angle for natural distribution
+                const radius = Math.min(30 + (index * 6), 150); // Varying radius, capped for smaller screens
+                const x = Math.cos(angle * Math.PI / 180) * radius;
+                const y = Math.sin(angle * Math.PI / 180) * radius;
+                
+                // Add some controlled randomness for more organic feel
+                const randomX = (Math.random() - 0.5) * 30;
+                const randomY = (Math.random() - 0.5) * 30;
+                
+                const rotation = (Math.random() - 0.5) * 25; // Random rotation between -12.5 and 12.5 degrees
+                
+                return (
+                  <span
+                    key={index}
+                    className={`absolute font-medium transition-all duration-300 hover:text-primary cursor-default hover:scale-110 animate-fade-in ${getWordColor(
+                      wordData.frequency,
+                      maxFreq
+                    )}`}
+                    style={{
+                      fontSize: `${wordData.size}px`,
+                      left: `calc(50% + ${x + randomX}px)`,
+                      top: `calc(50% + ${y + randomY}px)`,
+                      transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+                      animationDelay: `${index * 0.1}s`,
+                      textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    }}
+                    title={`"${wordData.word}" appears ${wordData.frequency} times`}
+                  >
+                    {wordData.word}
+                  </span>
+                );
+              })}
             </div>
           </div>
 

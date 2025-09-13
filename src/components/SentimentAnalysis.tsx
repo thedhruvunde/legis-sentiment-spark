@@ -10,7 +10,7 @@ interface SentimentAnalysisProps {
 
 interface SentimentResult {
   comment: string;
-  sentiment: 'positive' | 'negative' | 'neutral';
+  sentiment: 'agreement' | 'removal' | 'modification';
   confidence: number;
 }
 
@@ -26,17 +26,17 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
       const positiveMatches = positiveWords.filter(word => lowerComment.includes(word)).length;
       const negativeMatches = negativeWords.filter(word => lowerComment.includes(word)).length;
       
-      let sentiment: 'positive' | 'negative' | 'neutral';
+      let sentiment: 'agreement' | 'removal' | 'modification';
       let confidence: number;
       
       if (positiveMatches > negativeMatches) {
-        sentiment = 'positive';
+        sentiment = 'agreement';
         confidence = Math.min(0.95, 0.6 + (positiveMatches * 0.1));
       } else if (negativeMatches > positiveMatches) {
-        sentiment = 'negative';
+        sentiment = 'removal';
         confidence = Math.min(0.95, 0.6 + (negativeMatches * 0.1));
       } else {
-        sentiment = 'neutral';
+        sentiment = 'modification';
         confidence = 0.7 + Math.random() * 0.2;
       }
       
@@ -50,22 +50,22 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
         acc[result.sentiment]++;
         return acc;
       },
-      { positive: 0, negative: 0, neutral: 0 }
+      { agreement: 0, removal: 0, modification: 0 }
     );
     
     const total = sentimentResults.length;
     return {
-      positive: { count: counts.positive, percentage: (counts.positive / total) * 100 },
-      negative: { count: counts.negative, percentage: (counts.negative / total) * 100 },
-      neutral: { count: counts.neutral, percentage: (counts.neutral / total) * 100 },
+      agreement: { count: counts.agreement, percentage: (counts.agreement / total) * 100 },
+      removal: { count: counts.removal, percentage: (counts.removal / total) * 100 },
+      modification: { count: counts.modification, percentage: (counts.modification / total) * 100 },
     };
   }, [sentimentResults]);
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
-      case 'positive':
+      case 'agreement':
         return <TrendingUp className="h-4 w-4" />;
-      case 'negative':
+      case 'removal':
         return <TrendingDown className="h-4 w-4" />;
       default:
         return <Minus className="h-4 w-4" />;
@@ -74,9 +74,9 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
 
   const getSentimentBadgeVariant = (sentiment: string) => {
     switch (sentiment) {
-      case 'positive':
+      case 'agreement':
         return 'default';
-      case 'negative':
+      case 'removal':
         return 'destructive';
       default:
         return 'secondary';
@@ -113,46 +113,46 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Positive */}
+            {/* In Agreement */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-positive"></div>
-                  <span className="font-medium">Positive</span>
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="font-medium">In Agreement</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {sentimentCounts.positive.count} ({sentimentCounts.positive.percentage.toFixed(1)}%)
+                  {sentimentCounts.agreement.count} ({sentimentCounts.agreement.percentage.toFixed(1)}%)
                 </span>
               </div>
-              <Progress value={sentimentCounts.positive.percentage} className="h-2" />
+              <Progress value={sentimentCounts.agreement.percentage} className="h-2" />
             </div>
 
-            {/* Neutral */}
+            {/* In Modification */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-neutral"></div>
-                  <span className="font-medium">Neutral</span>
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="font-medium">In Modification of Section</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {sentimentCounts.neutral.count} ({sentimentCounts.neutral.percentage.toFixed(1)}%)
+                  {sentimentCounts.modification.count} ({sentimentCounts.modification.percentage.toFixed(1)}%)
                 </span>
               </div>
-              <Progress value={sentimentCounts.neutral.percentage} className="h-2" />
+              <Progress value={sentimentCounts.modification.percentage} className="h-2" />
             </div>
 
-            {/* Negative */}
+            {/* In Removal */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-negative"></div>
-                  <span className="font-medium">Negative</span>
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="font-medium">In Removal of Section</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {sentimentCounts.negative.count} ({sentimentCounts.negative.percentage.toFixed(1)}%)
+                  {sentimentCounts.removal.count} ({sentimentCounts.removal.percentage.toFixed(1)}%)
                 </span>
               </div>
-              <Progress value={sentimentCounts.negative.percentage} className="h-2" />
+              <Progress value={sentimentCounts.removal.percentage} className="h-2" />
             </div>
           </div>
         </CardContent>
