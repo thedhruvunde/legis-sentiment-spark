@@ -137,73 +137,74 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Overall Sentiment Summary */}
-      <Card className="shadow-medium">
-        <CardHeader>
-          <CardTitle>Overall Sentiment Analysis</CardTitle>
-          <CardDescription>
-            Analyzing {comments.length} stakeholder comments
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* In Agreement */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="font-medium">In Agreement</span>
-                </div>
-                <span className="text-sm font-medium">
-                  {sentimentCounts.agreement.count} ({sentimentCounts.agreement.percentage.toFixed(1)}%)
-                </span>
-              </div>
-              <Progress value={sentimentCounts.agreement.percentage} className="h-2" />
+      {/* Summary Statistics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="shadow-medium">
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">In Agreement</p>
+              <p className="text-3xl font-bold text-green-600">
+                {sentimentCounts.agreement.percentage.toFixed(1)}%
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sentimentCounts.agreement.count} comments
+              </p>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* In Modification */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span className="font-medium">In Modification of Section</span>
-                </div>
-                <span className="text-sm font-medium">
-                  {sentimentCounts.modification.count} ({sentimentCounts.modification.percentage.toFixed(1)}%)
-                </span>
-              </div>
-              <Progress value={sentimentCounts.modification.percentage} className="h-2" />
+        <Card className="shadow-medium">
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">In Removal</p>
+              <p className="text-3xl font-bold text-red-600">
+                {sentimentCounts.removal.percentage.toFixed(1)}%
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sentimentCounts.removal.count} comments
+              </p>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* In Removal */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="font-medium">In Removal of Section</span>
-                </div>
-                <span className="text-sm font-medium">
-                  {sentimentCounts.removal.count} ({sentimentCounts.removal.percentage.toFixed(1)}%)
-                </span>
-              </div>
-              <Progress value={sentimentCounts.removal.percentage} className="h-2" />
+        <Card className="shadow-medium">
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">In Modification</p>
+              <p className="text-3xl font-bold text-blue-600">
+                {sentimentCounts.modification.percentage.toFixed(1)}%
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sentimentCounts.modification.count} comments
+              </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Charts Section */}
+        <Card className="shadow-medium">
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Avg. Sentiment</p>
+              <p className="text-3xl font-bold text-primary">
+                {((sentimentCounts.agreement.percentage - sentimentCounts.removal.percentage) / 100).toFixed(3)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Score
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Section - Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart */}
         <Card className="shadow-medium">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <PieChart className="h-5 w-5 text-primary" />
-              <span>Sentiment Distribution</span>
+              <span>Overall Sentiment Distribution</span>
             </CardTitle>
-            <CardDescription>
-              Overall distribution of stakeholder sentiments
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -238,9 +239,6 @@ export const SentimentAnalysis = ({ comments }: SentimentAnalysisProps) => {
               <BarChart3 className="h-5 w-5 text-primary" />
               <span>Sentiment by Stakeholder Type</span>
             </CardTitle>
-            <CardDescription>
-              Distribution of sentiments across different stakeholder categories
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
